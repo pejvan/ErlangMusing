@@ -4,7 +4,7 @@
 -import(string,[right/2]).
 -export([test/0, dir/1 ]). 
 
-test() -> dir("/Users/pejvan/Downloads").
+test() -> dir("/Users/pejvan/Downloads/alt.binaries.mp3").
 
 filterFileExtensions(Ext)  ->
     fun(Filename) -> string:right(Filename, 4) == Ext end.
@@ -13,14 +13,14 @@ filterFileExtensions(Ext)  ->
 dir(Dir) -> 
     {ok, Filenames} = file:list_dir_all(Dir),
     IsMp3File = filterFileExtensions(".mp3"),
-    Mp3Files = lists:filter(IsMp3File, Filenames).
-    %L1 = map(fun(I) -> { I, (catch read_id3_tag(I)) } end, Mp3Files),
-    %L2 = filter( fun({_, error}) -> false,
-    %	             (_) -> true
-    %		 end, L1),
+    Mp3Files = lists:filter(IsMp3File, Filenames),
+    L1 = map(fun(I) -> { I, (catch read_id3_tag(I)) } end, Mp3Files),
+    L2 = filter( fun({_, error}) -> false;
+    	             (_) -> true
+    		 end, L1),
 
-    %lib_misc:dump("mp3data", L2).
-    
+    io:fwrite("completed.~n"),
+    L2.
 
 read_id3_tag(File) ->
     case file:open(File, [read,binary,raw]) of
@@ -36,7 +36,7 @@ parse_v1_tag(<<$T,$A,$G,
 	       Title:30/binary, Artist:30/binary, 
 	       Album:30/binary, _Year:4/binary,
 	       _Comment:28/binary, 0:8, Track:8, _Genre:8>>) ->
-    {"ID3v1.1", [{track,Track}, {title,trim(Title)}
+    {"ID3v1.1", [{track,Track}, {title,trim(Title)},
 		 {artist,trim(Artist)}, {album, trim(Album)}]};
 
 parse_v1_tag(<<$T,$A,$G,
